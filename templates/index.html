@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Time Tweet Count</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+    <script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
+	<script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
+    <script type="text/javascript">
+		// Socker.io
+		$(document).ready(function(){
+			// sending a connect request to the server.
+			var socket = io.connect('http://realtimechart.example.com/');
+
+      //  Checking backend server connectivity
+      socket.on('after connect', function(msg){
+      	console.log('After connect', msg);
+      });
+
+			socket.on('connect', function() {
+				socket.emit('my event', {data: 'I\'m connected!'});
+			});
+
+      $("button").click(function() {
+        socket.emit('stream_event', "My msg from client")
+    		console.log("The button was clicked.");
+  		});
+      
+      // Getting tweet count
+      tweet_count = 0;
+			socket.on('get_tweet_data', function (data) {
+				tweet_count = data;
+				console.log("Tweet Count: ", tweet_count)
+			})
+
+			// Rander chart
+			FusionCharts.ready(function() {
+              var stockPriceChart = new FusionCharts({
+                  id: "stockRealTimeChart",
+                  type: 'realtimeline',
+                  renderAt: 'chart-container',
+                  width: '1200',
+                  height: '700',
+                  dataFormat: 'json',
+                  dataSource: {
+                    "chart": {
+                      "xAxisName": "Time",
+                      "yAxisName": "Tweet Count",
+                      "refreshinterval": "10",
+                      "yaxisminvalue": "0",
+                      "yaxismaxvalue": "30",
+                      "numdisplaysets": "10",
+                      "labeldisplay": "rotate",
+                      "showRealTimeValue": "0",
+                      "theme": "fusion"
+                    },
+                    "categories": [{
+                      "category": [{
+                        "label": "Tweet Count"
+                      }]
+                    }],
+                    "dataset": [{
+                      "data": [{
+                        "value": "0"
+                      }]
+                    }]
+                  },
+                  "events": {
+                    "initialized": function(e) {
+                      function addLeadingZero(num) {
+                        return (num <= 9) ? ("0" + num) : num;
+                      }
+
+                      function updateData() {
+                        // Get reference to the chart using its ID
+                        var chartRef = FusionCharts("stockRealTimeChart"),
+                          // We need to create a querystring format incremental update, containing
+                          // label in hh:mm:ss format
+                          // and a value (random).
+                          currDate = new Date(),
+                          label = addLeadingZero(currDate.getHours()) + ":" +
+                          addLeadingZero(currDate.getMinutes()) + ":" +
+                          addLeadingZero(currDate.getSeconds()),
+                          // Build Data String in format &label=...&value=...
+                          strData = "&label=" + label +
+                          "&value=" +
+                          tweet_count;
+                        // Feed it to chart.
+                        chartRef.feedData(strData);
+                      }
+                      // Taking interval of 10 secs.
+                      var myVar = setInterval(function() {
+                        updateData();
+                      }, 10000);
+                    }
+                  }
+                })
+                .render();
+            });
+		});
+    </script>
+</head>
+<body>
+<div class="container text-center">
+    <h2>Real time count of Tweets</h2>
+    <button class="btn btn-primary">Load Data</button>
+	<div id="chart-container"></div>
+</div>
+</body>
+</html>
