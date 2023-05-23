@@ -11,11 +11,11 @@ socketio = SocketIO(app)
 ACCESS_KEY=os.environ.get('AWS_ACCESS_KEY')
 SECRET_KEY=os.environ.get('AWS_SECRET_KEY')
 
+REGION_NAME = "eu-central-1"
 # Kinesis stream name of consume tweet count
 STREAM_NAME = 'TweetStreamOutput'
 # Initializing kinesis client
-kinesis_client = boto3.client("kinesis",aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY,region_name="eu-central-1")
-
+kinesis_client = boto3.client("kinesis", aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY,region_name=REGION_NAME)
 # Reading messaging from kinesis stream
 response = kinesis_client.describe_stream(StreamName=STREAM_NAME)
 my_shard_id = response['StreamDescription']['Shards'][0]['ShardId']
@@ -67,7 +67,7 @@ def handle_my_event(message):
             tweet_count = eval(record['Data'].decode("utf-8"))['tweet_count']
         emit('get_tweet_data', tweet_count, broadcast=True)
         print("tweet count: ", tweet_count)
-        socketio.sleep(10)
+        # socketio.sleep(10)
 
 if __name__ == '__main__':
     # Running flask application

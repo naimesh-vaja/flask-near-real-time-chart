@@ -13,6 +13,7 @@
 		$(document).ready(function(){
 			// sending a connect request to the server.
 			var socket = io.connect('http://realtimechart.example.com/');
+			// var socket = io.connect('http://127.0.0.1:5000/');
 
       //  Checking backend server connectivity
       socket.on('after connect', function(msg){
@@ -54,7 +55,11 @@
                       "numdisplaysets": "10",
                       "labeldisplay": "rotate",
                       "showRealTimeValue": "0",
-                      "theme": "fusion"
+                      "theme": "fusion",
+                      "scrollheight": "10",
+                      "flatScrollBars": "1",
+                      "scrollShowButtons": "0",
+                      "scrollColor": "#cccccc"
                     },
                     "categories": [{
                       "category": [{
@@ -63,7 +68,7 @@
                     }],
                     "dataset": [{
                       "data": [{
-                        "value": "0"
+                        "value": tweet_count
                       }]
                     }]
                   },
@@ -75,6 +80,7 @@
 
                       function updateData() {
                         // Get reference to the chart using its ID
+                        console.log("New Count: ", tweet_count)
                         var chartRef = FusionCharts("stockRealTimeChart"),
                           // We need to create a querystring format incremental update, containing
                           // label in hh:mm:ss format
@@ -89,6 +95,7 @@
                           tweet_count;
                         // Feed it to chart.
                         chartRef.feedData(strData);
+                        console.log("Chart Data Point: ", strData)
                       }
                       // Taking interval of 10 secs.
                       var myVar = setInterval(function() {

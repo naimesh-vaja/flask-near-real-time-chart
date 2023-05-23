@@ -1,1 +1,5 @@
-/k8s
+k8s
+.pytest_cache
+__pycache__
+**/__pycache__/
+__pycache__/
